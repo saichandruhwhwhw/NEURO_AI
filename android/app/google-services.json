@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "347507909123",
+    "project_id": "neurolearn-ai-6becf",
+    "storage_bucket": "neurolearn-ai-6becf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:347507909123:android:21ac36a2cfb941dd762436",
+        "android_client_info": {
+          "package_name": "com.example.neurolearn_ai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "347507909123-e5gb9aa3ur9bifkrisoc2ng25tv9na0r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9SWy00vLqH2LZFlX_oyGp4aO7GBsnYkA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "347507909123-e5gb9aa3ur9bifkrisoc2ng25tv9na0r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:347507909123:android:b8b1e9df5ab8a6a1762436",
+        "android_client_info": {
+          "package_name": "com.example.neurolearnai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "347507909123-e5gb9aa3ur9bifkrisoc2ng25tv9na0r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9SWy00vLqH2LZFlX_oyGp4aO7GBsnYkA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "347507909123-e5gb9aa3ur9bifkrisoc2ng25tv9na0r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
