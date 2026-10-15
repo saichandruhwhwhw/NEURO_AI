@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/providers/student_provider.dart';
 import 'glass_container.dart';
 
 class BrainMirrorPanel extends StatelessWidget {
@@ -8,6 +10,18 @@ class BrainMirrorPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final studentProvider = Provider.of<StudentProvider>(context);
+    final profile = studentProvider.studentProfile;
+    final burnoutData = studentProvider.burnoutData;
+    
+    double cognitiveScore = profile?['cognitiveScore']?.toDouble() ?? 94.2;
+    double focusLevel = profile?['focusLevel']?.toDouble() ?? 88.0;
+    
+    double confidence = cognitiveScore > 0 ? (cognitiveScore / 100.0).clamp(0.0, 1.0) : 0.85;
+    double concentration = (focusLevel / 100.0).clamp(0.0, 1.0);
+    double overload = burnoutData['burnoutProbability']?.toDouble() ?? 0.35;
+    double emotionalStability = ((confidence * 0.6) + (concentration * 0.4)).clamp(0.0, 1.0);
+
     return FadeInUp(
       duration: const Duration(milliseconds: 700),
       child: GlassContainer(
@@ -51,14 +65,14 @@ class BrainMirrorPanel extends StatelessWidget {
                   ? Row(
                       children: [
                         Expanded(child: _buildBrainHologram()),
-                        Expanded(child: _buildStatsList()),
+                        Expanded(child: _buildStatsList(confidence, concentration, overload, emotionalStability)),
                       ],
                     )
                   : Column(
                       children: [
                         _buildBrainHologram(),
                         const SizedBox(height: 24),
-                        _buildStatsList(),
+                        _buildStatsList(confidence, concentration, overload, emotionalStability),
                       ],
                     );
               },
@@ -123,16 +137,16 @@ class BrainMirrorPanel extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsList() {
+  Widget _buildStatsList(double confidence, double concentration, double overload, double emotionalStability) {
     return Column(
       children: [
-        _buildStatRow('Confidence Level', 0.85, AppColors.primaryNeon),
+        _buildStatRow('Confidence Level', confidence, AppColors.primaryNeon),
         const SizedBox(height: 16),
-        _buildStatRow('Concentration', 0.92, AppColors.secondaryNeon),
+        _buildStatRow('Concentration', concentration, AppColors.secondaryNeon),
         const SizedBox(height: 16),
-        _buildStatRow('Mental Overload', 0.35, Colors.orangeAccent),
+        _buildStatRow('Mental Overload', overload, Colors.orangeAccent),
         const SizedBox(height: 16),
-        _buildStatRow('Emotional Stability', 0.88, AppColors.accentPink),
+        _buildStatRow('Emotional Stability', emotionalStability, AppColors.accentPink),
       ],
     );
   }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/providers/student_provider.dart';
 import 'glass_container.dart';
 import 'dart:math' as math;
 
@@ -31,6 +33,36 @@ class _SubjectUniversePanelState extends State<SubjectUniversePanel> with Single
 
   @override
   Widget build(BuildContext context) {
+    final studentProvider = Provider.of<StudentProvider>(context);
+    final skillsData = studentProvider.skillsData;
+    
+    List<String> strongSkills = List<String>.from(skillsData['skillsList'] ?? ['DSA', 'OS']);
+    List<String> weakSkills = List<String>.from(skillsData['missingSkills'] ?? ['Math', 'System Design']);
+    
+    List<Widget> planets = [];
+    
+    // Add strong skills (inner orbit)
+    for (int i = 0; i < strongSkills.length; i++) {
+      planets.add(_buildPlanet(
+        radius: 100,
+        angleOffset: (2 * math.pi / strongSkills.length) * i,
+        color: i % 2 == 0 ? Colors.blueAccent : AppColors.accentPurple,
+        label: strongSkills[i].length > 10 ? strongSkills[i].substring(0, 10) + '...' : strongSkills[i],
+        speedMultiplier: 1.0,
+      ));
+    }
+    
+    // Add weak skills (outer orbit)
+    for (int i = 0; i < weakSkills.length; i++) {
+      planets.add(_buildPlanet(
+        radius: 180,
+        angleOffset: (2 * math.pi / weakSkills.length) * i + (math.pi / 4),
+        color: Colors.redAccent,
+        label: weakSkills[i].length > 10 ? weakSkills[i].substring(0, 10) + '...' : weakSkills[i],
+        speedMultiplier: 0.6,
+      ));
+    }
+
     return FadeInUp(
       duration: const Duration(milliseconds: 800),
       child: GlassContainer(
@@ -89,34 +121,7 @@ class _SubjectUniversePanelState extends State<SubjectUniversePanel> with Single
                     _buildOrbitCircle(180),
 
                     // Planets
-                    _buildPlanet(
-                      radius: 100,
-                      angleOffset: 0,
-                      color: Colors.blueAccent, // Strong
-                      label: 'DSA',
-                      speedMultiplier: 1.0,
-                    ),
-                    _buildPlanet(
-                      radius: 100,
-                      angleOffset: math.pi,
-                      color: Colors.redAccent, // Weak
-                      label: 'Math',
-                      speedMultiplier: 1.0,
-                    ),
-                    _buildPlanet(
-                      radius: 180,
-                      angleOffset: math.pi / 2,
-                      color: Colors.blueAccent, // Strong
-                      label: 'OS',
-                      speedMultiplier: 0.6,
-                    ),
-                    _buildPlanet(
-                      radius: 180,
-                      angleOffset: 3 * math.pi / 2,
-                      color: AppColors.accentPurple, // Neutral/Good
-                      label: 'AI',
-                      speedMultiplier: 0.6,
-                    ),
+                    ...planets,
                   ],
                 ),
               ),

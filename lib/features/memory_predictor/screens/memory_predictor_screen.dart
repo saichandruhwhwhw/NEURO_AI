@@ -13,41 +13,35 @@ class MemoryPredictorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Stack(
-        children: [
-          // Cyberpunk/Neural Background
-          Container(
-            decoration: const BoxDecoration(
-              gradient: RadialGradient(
-                colors: [
-                  Color(0xFF2B1055), // Deep space purple
-                  AppColors.background,
-                ],
-                center: Alignment.topCenter,
-                radius: 1.5,
-              ),
+    return Stack(
+      children: [
+        // Cyberpunk/Neural Background
+        Container(
+          decoration: const BoxDecoration(
+            gradient: RadialGradient(
+              colors: [
+                Color(0xFF2B1055), // Deep space purple
+                AppColors.background,
+              ],
+              center: Alignment.topCenter,
+              radius: 1.5,
             ),
           ),
-          // Scrollable Content
-          Positioned.fill(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 60, 24, 100),
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  FadeInDown(
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                        const Icon(Icons.psychology_alt, color: AppColors.primaryNeon, size: 32),
-                        const SizedBox(width: 12),
-                        Column(
+        ),
+        // Scrollable Content
+        Positioned.fill(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 60, 24, 100),
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FadeInDown(
+                  child: Row(
+                    children: [
+                      const Icon(Icons.psychology_alt, color: AppColors.primaryNeon, size: 32),
+                      const SizedBox(width: 12),
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
@@ -107,8 +101,8 @@ class MemoryPredictorScreen extends StatelessWidget {
               ],
             ),
           ),
+        ),
       ],
-      ),
     );
   }
 }

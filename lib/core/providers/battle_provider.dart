@@ -32,6 +32,20 @@ class BattleProvider extends ChangeNotifier {
     {'id': 'use_powerup', 'desc': 'Use 3 powerups in live battles', 'target': 3, 'current': 1, 'rewardXP': 80, 'rewardCoins': 40, 'completed': false},
   ];
 
+  // Achievements
+  List<Map<String, dynamic>> achievements = [
+    {'id': 'first_win', 'title': 'First Blood', 'desc': 'Win your first battle.', 'unlocked': true},
+    {'id': '10_wins', 'title': 'Rising Star', 'desc': 'Win 10 battles.', 'unlocked': false},
+    {'id': 'dept_champ', 'title': 'Department Champion', 'desc': 'Win 5 department wars.', 'unlocked': false},
+    {'id': 'tourney_win', 'title': 'Tournament Victor', 'desc': 'Win a 8-player bracket.', 'unlocked': false},
+  ];
+
+  // Store Inventory tracking
+  List<String> unlockedThemes = ['Cyber Neon', 'Dark Matter'];
+  String activeTheme = 'Cyber Neon';
+  List<String> unlockedAvatars = ['default_bot.png'];
+  String activeAvatar = 'default_bot.png';
+
   // Active multiplayer room state
   StreamSubscription? _roomSub;
   Map<String, dynamic>? activeRoom;
@@ -50,74 +64,38 @@ class BattleProvider extends ChangeNotifier {
   // Global leaderboard
   List<Map<String, dynamic>> leaderboard = [];
 
-  // Question bank with diverse subjects
-  final List<Map<String, dynamic>> _questionBank = [
-    // Coding
-    {
-      'question': 'Which Dart collection type maintains insertion order and allows unique items only?',
-      'options': ['List', 'Map', 'Set', 'LinkedHashSet'],
-      'correctIndex': 3,
-      'category': 'Coding'
-    },
-    {
-      'question': 'What is the time complexity of searching in a balanced Binary Search Tree?',
-      'options': ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)'],
-      'correctIndex': 1,
-      'category': 'Coding'
-    },
-    // AI / ML
-    {
-      'question': 'Which activation function is commonly used to prevent vanishing gradient problems?',
-      'options': ['Sigmoid', 'Tanh', 'ReLU', 'Softmax'],
-      'correctIndex': 2,
-      'category': 'Artificial Intelligence'
-    },
-    {
-      'question': 'What technique regularizes deep neural networks by randomly dropping neurons during training?',
-      'options': ['Batch Normalization', 'Gradient Descent', 'Dropout', 'Weight Decay'],
-      'correctIndex': 2,
-      'category': 'Artificial Intelligence'
-    },
-    // Aptitude
-    {
-      'question': 'A train traveling at 60 km/h passes a post in 9 seconds. What is the length of the train in meters?',
-      'options': ['120m', '150m', '180m', '200m'],
-      'correctIndex': 1,
-      'category': 'Aptitude'
-    },
-    {
-      'question': 'If 5 machines take 5 minutes to produce 5 widgets, how long would it take 100 machines to make 100 widgets?',
-      'options': ['5 minutes', '20 minutes', '50 minutes', '100 minutes'],
-      'correctIndex': 0,
-      'category': 'Aptitude'
-    },
-    // Memory
-    {
-      'question': 'According to Ebbinghaus forgetting curve theory, within what timeframe does the steepest drop in memory recall happen?',
-      'options': ['First 20 minutes', 'First 2 hours', 'First 24 hours', 'First week'],
-      'correctIndex': 0,
-      'category': 'Memory'
-    },
-    // Cognitive
-    {
-      'question': 'Complete the series: 2, 6, 12, 20, 30, ?',
-      'options': ['36', '40', '42', '46'],
-      'correctIndex': 2,
-      'category': 'Cognitive'
-    },
-    {
-      'question': 'In a vector space, if vectors A and B are orthogonal, what is their dot product?',
-      'options': ['0', '1', '-1', 'Infinity'],
-      'correctIndex': 0,
-      'category': 'Cognitive'
-    },
-    {
-      'question': 'What protocol operates at the Application Layer (Layer 7) of the OSI model?',
-      'options': ['TCP', 'IP', 'HTTP', 'Ethernet'],
-      'correctIndex': 2,
-      'category': 'Department Core'
-    }
-  ];
+  // Question bank mapped by department
+  final Map<String, List<Map<String, dynamic>>> _departmentQuestions = {
+    'IT': [
+      {'question': 'Which keyword is used to handle exceptions in Java?', 'options': ['try', 'catch', 'throw', 'All of the above'], 'correctIndex': 3},
+      {'question': 'What does DCCN stand for?', 'options': ['Data Computer Network', 'Data Communication and Computer Networks', 'Digital Computer Network', 'None'], 'correctIndex': 1},
+      {'question': 'Which protocol is used for secure communication over internet?', 'options': ['HTTP', 'FTP', 'HTTPS', 'SMTP'], 'correctIndex': 2},
+    ],
+    'CSE': [
+      {'question': 'What is the time complexity of searching in a balanced BST?', 'options': ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)'], 'correctIndex': 1},
+      {'question': 'Which phase of compiler generates target code?', 'options': ['Lexical', 'Syntax', 'Semantic', 'Code Generation'], 'correctIndex': 3},
+      {'question': 'What avoids deadlock in OS?', 'options': ['Bankers Algorithm', 'Round Robin', 'FCFS', 'SJF'], 'correctIndex': 0},
+    ],
+    'AIDS': [
+      {'question': 'Which activation function is used to prevent vanishing gradients?', 'options': ['Sigmoid', 'Tanh', 'ReLU', 'Softmax'], 'correctIndex': 2},
+      {'question': 'What does SVM stand for in ML?', 'options': ['Support Vector Machine', 'Simple Vector Math', 'Static Variable Model', 'System Virtual Machine'], 'correctIndex': 0},
+    ],
+    'ECE': [
+      {'question': 'In a D flip-flop, what does the D stand for?', 'options': ['Data', 'Delay', 'Digital', 'Both A and B'], 'correctIndex': 3},
+      {'question': 'What is the base of Hexadecimal system?', 'options': ['2', '8', '10', '16'], 'correctIndex': 3},
+    ],
+    'MECH': [
+      {'question': 'Which law of thermodynamics defines entropy?', 'options': ['Zeroth', 'First', 'Second', 'Third'], 'correctIndex': 2},
+      {'question': 'What does CAD stand for?', 'options': ['Computer Aided Design', 'Car Auto Design', 'Computer Architecture Design', 'None'], 'correctIndex': 0},
+    ],
+    'CIVIL': [
+      {'question': 'What is the standard size of a modular brick?', 'options': ['19x9x9 cm', '20x10x10 cm', '22x11x7 cm', 'None'], 'correctIndex': 0},
+    ],
+    'GENERAL': [
+      {'question': 'A train traveling at 60 km/h passes a post in 9 seconds. Train length?', 'options': ['120m', '150m', '180m', '200m'], 'correctIndex': 1},
+      {'question': 'According to Ebbinghaus, when does the steepest drop in memory recall happen?', 'options': ['First 20 mins', 'First 2 hrs', 'First 24 hrs', 'First week'], 'correctIndex': 0},
+    ]
+  };
 
   BattleProvider() {
     _loadLeaderboard();
@@ -133,16 +111,46 @@ class BattleProvider extends ChangeNotifier {
     ];
   }
 
-  // --- POWERUP SHOP ACTIONS ---
-  bool buyPowerup(String powerupId, int cost) {
+  // --- STORE ACTIONS ---
+  bool buyItem(String itemId, int cost, String type) {
     if (coins >= cost) {
       coins -= cost;
-      powerups[powerupId] = (powerups[powerupId] ?? 0) + 1;
+      if (type == 'powerup') {
+        powerups[itemId] = (powerups[itemId] ?? 0) + 1;
+      } else if (type == 'theme') {
+        unlockedThemes.add(itemId);
+      } else if (type == 'avatar') {
+        unlockedAvatars.add(itemId);
+      }
       notifyListeners();
       return true;
     }
     return false;
   }
+  
+  void setActiveTheme(String theme) {
+    if (unlockedThemes.contains(theme)) {
+      activeTheme = theme;
+      notifyListeners();
+    }
+  }
+
+  void setActiveAvatar(String avatar) {
+    if (unlockedAvatars.contains(avatar)) {
+      activeAvatar = avatar;
+      notifyListeners();
+    }
+  }
+
+  void unlockAchievement(String achId) {
+    var ach = achievements.firstWhere((a) => a['id'] == achId, orElse: () => {});
+    if (ach.isNotEmpty && ach['unlocked'] == false) {
+      ach['unlocked'] = true;
+      notifyListeners();
+    }
+  }
+
+  // --- POWERUP SHOP ACTIONS ---
 
   void usePowerup(String powerupId) {
     if ((powerups[powerupId] ?? 0) > 0) {
@@ -179,14 +187,15 @@ class BattleProvider extends ChangeNotifier {
   // --- MULTIPLAYER ROOM ENGINE ---
 
   // 1. Create Room on Firestore
-  Future<String> createRoom(String subject, String studentId, String studentName) async {
+  Future<String> createRoom(String subject, String studentId, String studentName, {String mode = '1v1'}) async {
     isSearching = true;
     notifyListeners();
 
     String roomId = "room_${_random.nextInt(8999) + 1000}";
     
-    // Choose 10 random questions from bank
-    List<Map<String, dynamic>> selectedQuestions = List.from(_questionBank);
+    // Choose 10 random questions from bank based on subject or dept
+    List<Map<String, dynamic>> pool = _departmentQuestions[subject] ?? _departmentQuestions['GENERAL']!;
+    List<Map<String, dynamic>> selectedQuestions = List.from(pool);
     selectedQuestions.shuffle();
     if (selectedQuestions.length > 10) {
       selectedQuestions = selectedQuestions.sublist(0, 10);
@@ -195,6 +204,7 @@ class BattleProvider extends ChangeNotifier {
     final roomDoc = {
       'roomId': roomId,
       'subject': subject,
+      'mode': mode,
       'status': 'waiting',
       'currentQuestionIndex': 0,
       'questions': selectedQuestions,
@@ -208,6 +218,10 @@ class BattleProvider extends ChangeNotifier {
         'answers': [], // list of bools
       },
       'player2': null,
+      'player3': null, // For 2v2 Team mode
+      'player4': null, // For 2v2 Team mode
+      'team1Score': 0,
+      'team2Score': 0,
       'createdAt': FieldValue.serverTimestamp(),
     };
 
@@ -227,23 +241,41 @@ class BattleProvider extends ChangeNotifier {
 
     if (snap.exists) {
       var data = snap.data() as Map<String, dynamic>;
-      if (data['status'] == 'waiting' && data['player2'] == null) {
-        // Join room
-        await ref.update({
-          'player2': {
-            'uid': studentId,
-            'name': studentName,
-            'score': 0,
-            'accuracy': 0,
-            'speed': 0.0,
-            'focus': 0.88,
-            'answers': [],
-          },
-          'status': 'countdown' // Trigger countdown for both
-        });
+      
+      var newPlayer = {
+        'uid': studentId,
+        'name': studentName,
+        'score': 0,
+        'accuracy': 0,
+        'speed': 0.0,
+        'focus': 0.88,
+        'answers': [],
+      };
 
-        subscribeToRoom(roomId);
-        return true;
+      if (data['mode'] == '1v1' || data['mode'] == 'voice') {
+        if (data['status'] == 'waiting' && data['player2'] == null) {
+          await ref.update({
+            'player2': newPlayer,
+            'status': 'countdown' // Trigger countdown for both
+          });
+          subscribeToRoom(roomId);
+          return true;
+        }
+      } else if (data['mode'] == '2v2') {
+        if (data['status'] == 'waiting') {
+          if (data['player2'] == null) {
+            await ref.update({'player2': newPlayer});
+          } else if (data['player3'] == null) {
+            await ref.update({'player3': newPlayer});
+          } else if (data['player4'] == null) {
+            await ref.update({
+              'player4': newPlayer,
+              'status': 'countdown'
+            });
+          }
+          subscribeToRoom(roomId);
+          return true;
+        }
       }
     }
 
@@ -341,7 +373,8 @@ class BattleProvider extends ChangeNotifier {
     notifyListeners();
 
     // Select questions
-    List<Map<String, dynamic>> selectedQuestions = List.from(_questionBank);
+    List<Map<String, dynamic>> pool = _departmentQuestions['GENERAL']!;
+    List<Map<String, dynamic>> selectedQuestions = List.from(pool);
     selectedQuestions.shuffle();
     if (selectedQuestions.length > 10) {
       selectedQuestions = selectedQuestions.sublist(0, 10);
@@ -487,6 +520,10 @@ class BattleProvider extends ChangeNotifier {
     if (userAccuracy > 85) {
       incrementQuestProgress('high_acc', 1);
     }
+    
+    // Unlock achievements
+    if (winStreak == 1) unlockAchievement('first_win');
+    if (winStreak == 10) unlockAchievement('10_wins');
 
     xp += earnedXP;
     coins += earnedCoins;

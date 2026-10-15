@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/providers/student_provider.dart';
 import '../../../core/widgets/holographic_card.dart';
 import '../../dashboard/widgets/ai_recommendation_widget.dart';
 
@@ -12,6 +14,14 @@ class AiRecommendationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<StudentProvider>(context);
+    final timetable = provider.timetableData['schedule']?['Monday'] ?? [];
+    List<dynamic> steps = timetable.isNotEmpty ? timetable : [
+      {'title': 'Review Quantum Physics notes', 'completed': true},
+      {'title': 'Take simulated mock exam', 'completed': false},
+      {'title': 'Read new article on AI ethics', 'completed': false},
+    ];
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       floatingActionButton: FadeInUp(
@@ -94,9 +104,13 @@ class AiRecommendationScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _buildPathStep("1", "Review Quantum Physics notes", true),
-                  _buildPathStep("2", "Take simulated mock exam", false),
-                  _buildPathStep("3", "Read new article on AI ethics", false),
+                  ...steps.asMap().entries.map((e) {
+                    int index = e.key;
+                    var stepData = e.value;
+                    String title = stepData['title'] ?? stepData['subject'] ?? 'Study session';
+                    bool completed = stepData['completed'] ?? false;
+                    return _buildPathStep("${index + 1}", title, completed);
+                  }),
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,

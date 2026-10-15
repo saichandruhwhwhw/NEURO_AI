@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/providers/student_provider.dart';
 import 'glass_container.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -9,6 +11,12 @@ class LearningActivityGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final studentProvider = Provider.of<StudentProvider>(context);
+    final burnoutData = studentProvider.burnoutData;
+    
+    double todayHours = (burnoutData['studyDurationMinutes']?.toDouble() ?? 240.0) / 60.0;
+    double productivity = burnoutData['productivityScore']?.toDouble() ?? 85.0;
+    
     return FadeInUp(
       duration: const Duration(milliseconds: 1000),
       child: GlassContainer(
@@ -119,7 +127,7 @@ class LearningActivityGraph extends StatelessWidget {
                     _buildBarData(0, 4, isToday: false),
                     _buildBarData(1, 6, isToday: false),
                     _buildBarData(2, 5, isToday: false),
-                    _buildBarData(3, 8, isToday: true),
+                    _buildBarData(3, todayHours > 0 ? todayHours : 8, isToday: true),
                     _buildBarData(4, 3, isToday: false),
                     _buildBarData(5, 7, isToday: false),
                     _buildBarData(6, 2, isToday: false),
@@ -131,8 +139,8 @@ class LearningActivityGraph extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildSummaryStat('Total Hours', '35h', Colors.orangeAccent),
-                _buildSummaryStat('Productivity', '85%', AppColors.primaryNeon),
+                _buildSummaryStat('Today Hours', '${todayHours.toStringAsFixed(1)}h', Colors.orangeAccent),
+                _buildSummaryStat('Productivity', '${productivity.toInt()}%', AppColors.primaryNeon),
                 _buildSummaryStat('Quizzes', '12', AppColors.accentPurple),
               ],
             ),

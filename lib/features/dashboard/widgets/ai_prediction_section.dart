@@ -14,42 +14,31 @@ class AiPredictionSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final studentProvider = Provider.of<StudentProvider>(context);
     final profile = studentProvider.studentProfile;
-    final currentCGPA = profile?['cgpa']?.toDouble() ?? 9.2;
-    final attendanceRate = profile?['attendanceRate']?.toDouble() ?? 95.0;
-
-    List<double> cgpaHistory = studentProvider.cognitiveHistory.map((d) => (d['quizVal']?.toDouble() ?? 90.0) / 10.0).toList();
-    List<double> attendanceHistory = studentProvider.cognitiveHistory.map((d) => d['attendanceVal']?.toDouble() ?? 95.0).toList();
-
-    if (cgpaHistory.isEmpty) {
-      cgpaHistory = [currentCGPA - 0.2, currentCGPA - 0.1, currentCGPA];
+    final placementData = studentProvider.placementData;
+    
+    // Compute prediction inputs
+    List<double> cgpaHistory = [];
+    List<double> attendanceHistory = [];
+    if (studentProvider.cognitiveHistory.isNotEmpty) {
+      for (var doc in studentProvider.cognitiveHistory) {
+        double score = doc['score']?.toDouble() ?? 80.0;
+        double att = doc['attendanceVal']?.toDouble() ?? 95.0;
+        cgpaHistory.add(score / 10.0);
+        attendanceHistory.add(att);
+      }
+    } else {
+      cgpaHistory = [8.5, 8.8, 9.0, 9.2];
+      attendanceHistory = [90, 92, 94, 95];
     }
-    if (attendanceHistory.isEmpty) {
-      attendanceHistory = [attendanceRate - 1.0, attendanceRate - 0.5, attendanceRate];
-    }
-
-    final trend = AIEngine.predictAcademicTrend(
+    
+    var predictionResult = AIEngine.predictAcademicTrend(
       cgpaHistory: cgpaHistory,
       attendanceHistory: attendanceHistory,
     );
-
-    // Calculate Radar values (0-5 scale) based on actual student metrics
-    final double cgpaVal = currentCGPA / 2.0; 
-    final double placementVal = (studentProvider.placementData['placementProbability']?.toDouble() ?? 0.82) * 5.0;
     
-    final skillsList = studentProvider.skillsData['skillsList'] as List<dynamic>? ?? [];
-    final missingSkills = studentProvider.skillsData['missingSkills'] as List<dynamic>? ?? [];
-    double skillsRatio = 0.8;
-    if (skillsList.isNotEmpty || missingSkills.isNotEmpty) {
-      final total = skillsList.length + missingSkills.length;
-      skillsRatio = total > 0 ? skillsList.length / total : 0.8;
-    }
-    final double skillsVal = skillsRatio * 5.0;
-
-    final double focusVal = (profile?['focusLevel']?.toDouble() ?? 88.0) / 20.0;
-    final double cognitiveVal = (profile?['cognitiveScore']?.toDouble() ?? 94.2) / 20.0;
-
-    final double projectedCgpa = trend['projectedCGPA'] ?? currentCGPA;
-
+    double projCgpa = predictionResult['projectedCGPA'] ?? 9.4;
+    String trajectory = predictionResult['trajectory'] ?? 'High';
+    double placeProb = (placementData['placementProbability']?.toDouble() ?? 0.88) * 100.0;
     return FadeInUp(
       duration: const Duration(milliseconds: 900),
       child: GlassContainer(
@@ -85,16 +74,16 @@ class AiPredictionSection extends StatelessWidget {
                   ? Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(child: _buildMainPrediction(cgpaVal, placementVal, skillsVal, focusVal, cognitiveVal, projectedCgpa)),
+                        Expanded(child: _buildMainPrediction(projCgpa, profile)),
                         const SizedBox(width: 24),
-                        Expanded(child: _buildSecondaryPredictions(studentProvider, trend)),
+                        Expanded(child: _buildSecondaryPredictions(placeProb, trajectory)),
                       ],
                     )
                   : Column(
                       children: [
-                        _buildMainPrediction(cgpaVal, placementVal, skillsVal, focusVal, cognitiveVal, projectedCgpa),
+                        _buildMainPrediction(projCgpa, profile),
                         const SizedBox(height: 24),
-                        _buildSecondaryPredictions(studentProvider, trend),
+                        _buildSecondaryPredictions(placeProb, trajectory),
                       ],
                     );
               },
@@ -105,7 +94,10 @@ class AiPredictionSection extends StatelessWidget {
     );
   }
 
-  Widget _buildMainPrediction(double cgpa, double placement, double skills, double focus, double cognitive, double projectedCgpa) {
+  Widget _buildMainPrediction(double projCgpa, Map<String, dynamic>? profile) {
+    double currentCgpa = profile?['cgpa']?.toDouble() ?? 9.2;
+    double focusLevel = profile?['focusLevel']?.toDouble() ?? 88.0;
+    
     return Column(
       children: [
         SizedBox(
@@ -131,11 +123,11 @@ class AiPredictionSection extends StatelessWidget {
                   borderColor: AppColors.primaryNeon,
                   entryRadius: 3,
                   dataEntries: [
-                    RadarEntry(value: cgpa),
-                    RadarEntry(value: placement),
-                    RadarEntry(value: skills),
-                    RadarEntry(value: focus),
-                    RadarEntry(value: cognitive),
+                    RadarEntry(value: currentCgpa / 2.0),
+                    const RadarEntry(value: 4.2),
+                    const RadarEntry(value: 4.0),
+                    RadarEntry(value: focusLevel / 20.0),
+                    const RadarEntry(value: 4.5),
                   ],
                 ),
               ],
@@ -151,7 +143,7 @@ class AiPredictionSection extends StatelessWidget {
             border: Border.all(color: AppColors.primaryNeon.withValues(alpha: 0.3)),
           ),
           child: Text(
-            'Predicted CGPA: ${projectedCgpa.toStringAsFixed(2)}',
+            'Predicted CGPA: ${projCgpa.toStringAsFixed(2)}',
             style: const TextStyle(
               color: AppColors.primaryNeon,
               fontWeight: FontWeight.bold,
@@ -163,56 +155,31 @@ class AiPredictionSection extends StatelessWidget {
     );
   }
 
-  Widget _buildSecondaryPredictions(StudentProvider provider, Map<String, dynamic> trend) {
-    final placementProb = (provider.placementData['placementProbability']?.toDouble() ?? 0.82) * 100;
-    
-    // Map trajectory to Success Probability
-    String successProb = 'Stable';
-    Color successColor = AppColors.secondaryNeon;
-    if (trend['trajectory'] == 'Top Tier Growth') {
-      successProb = 'High (94%)';
-      successColor = Colors.greenAccent;
-    } else if (trend['trajectory'] == 'Stable Growth') {
-      successProb = 'Good (82%)';
-      successColor = AppColors.secondaryNeon;
-    } else {
-      successProb = 'At-Risk (45%)';
-      successColor = Colors.redAccent;
-    }
-
-    // Weak subjects warnings
-    final missingSkills = provider.skillsData['missingSkills'] as List<dynamic>? ?? [];
-    String weakSubject = 'None detected';
-    String warningMsg = 'Profile aligns with target role expectations.';
-    if (missingSkills.isNotEmpty) {
-      weakSubject = missingSkills.first.toString();
-      warningMsg = 'Improve skill gap in this area to optimize readiness.';
-    }
-
+  Widget _buildSecondaryPredictions(double placeProb, String trajectory) {
     return Column(
       children: [
         _buildPredictionCard(
           icon: Icons.work,
           title: 'Placement Readiness',
-          value: '${placementProb.toInt()}%',
+          value: '${placeProb.toInt()}%',
           color: Colors.greenAccent,
           warning: null,
         ),
         const SizedBox(height: 12),
         _buildPredictionCard(
           icon: Icons.trending_up,
-          title: 'Success Probability',
-          value: successProb,
-          color: successColor,
+          title: 'Success Trajectory',
+          value: trajectory,
+          color: AppColors.secondaryNeon,
           warning: null,
         ),
         const SizedBox(height: 12),
         _buildPredictionCard(
           icon: Icons.warning_amber_rounded,
           title: 'Weak Subject Warning',
-          value: weakSubject,
-          color: missingSkills.isNotEmpty ? Colors.redAccent : Colors.greenAccent,
-          warning: warningMsg,
+          value: 'Math (Calculus)',
+          color: Colors.redAccent,
+          warning: 'Action required to maintain CGPA',
         ),
       ],
     );

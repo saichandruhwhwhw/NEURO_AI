@@ -413,7 +413,7 @@ class _CognitiveBattleArenaScreenState extends State<CognitiveBattleArenaScreen>
 
                 return GestureDetector(
                   onTap: () {
-                    bool ok = battleProv.buyPowerup(id, cost);
+                    bool ok = battleProv.buyItem(id, cost, 'powerup');
                     if (ok) {
                       FuturisticToast.show(context, message: "Acquired $name! Loaded in inventory.");
                     } else {
